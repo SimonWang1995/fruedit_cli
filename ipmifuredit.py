@@ -135,7 +135,7 @@ def set_item(item, value):
 
 
 def getopt():
-    args = argparse.ArgumentParser()
+    args = argparse.ArgumentParser(usage="%(prog)s + [ Option ]", description="FRU Edit Tool")
     for item in item_dict.keys():
         if item_dict[item]['param']:
             args.add_argument(item_dict[item]['param'],
@@ -151,6 +151,7 @@ def getopt():
         pass
     args.add_argument('-U', dest='bmc_user', help='set the bmc user name')
     args.add_argument('-P', dest='bmc_passwd', help='set the password of the bmc user')
+    args.add_argument('-V', action='version', version="%(prog)s-0.2", help="Show Version")
     args = args.parse_args()
     return args.__dict__
 
@@ -158,17 +159,17 @@ def getopt():
 params = getopt()
 print(params)
 
-tool_dir = os.getcwd() + os.sep + 'tools'
-tool_path = tool_dir + os.sep + sys.platform + os.sep
-if params['bmc_ip']:
-    if params['bmc_user'] and params['bmc_passwd']:
-        tool = tool_path + 'ipmitool -I lanplus  -H %s -U %s -P %s ' % (params['bmc_ip'], params['bmc_user'], params['bmc_passwd'])
-        print(tool)
-    else:
-        print('bmc user name & password should be setted at the same time')
+_HOME_PATH = os.path.dirname(__file__)
+_TOOL_PATH = os.path.join(_HOME_PATH, 'tools')
+_tool = os.path.join(_TOOL_PATH, sys.platform)
+if params['bmc_ip'] and params['bmc_user'] and params['bmc_passwd']:
+    tool = _tool + os.sep + 'ipmitool -I lanplus  -H %s -U %s -P %s ' % (params['bmc_ip'], params['bmc_user'], params['bmc_passwd'])
+    print(tool)
+elif params['bmc_ip'] or params['bmc_user'] or params['bmc_passwd']:
+        print('bmc ip & username & password should be setted at the same time')
         exit()
 else:
-    tool = tool_path + 'ipmitool '
+    tool = _tool + os.sep + 'ipmitool '
 for i in params.keys():
     if i not in ('bmc_ip', 'bmc_user', 'bmc_passwd'):
         if i == 'repair' and params[i]:
